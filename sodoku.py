@@ -1,5 +1,14 @@
 import numpy as np
 
+def read_puzzle(filename):
+    with open(filename) as f:
+        puzzle = [l.split() for l in f.readlines()]
+    return puzzle
+
+def pprint(puzzle):
+    for row in puzzle:
+        print(row)
+
 def print_puzzle(puzzle):
     for i in range(9):
         for j in range(9):
