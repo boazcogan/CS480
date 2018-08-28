@@ -1,4 +1,3 @@
-import numpy as np
 
 def read_puzzle(filename):
     with open(filename) as f:
@@ -19,7 +18,7 @@ def print_puzzle(puzzle):
             print()
         print()
 
-
+'''
 def create_puzzle():
     sodoku_puzzle = []
     for i in range(9):
@@ -29,8 +28,8 @@ def create_puzzle():
             sodoku_puzzle[i][j] = [input("")]
     print_puzzle(sodoku_puzzle)
     return sodoku_puzzle
-
-
+'''
+'''
 def possible_solutions_for_square(puzzle, R, C):
     possible_values = [True for i in range(9)]
     for i in range(9):
@@ -47,17 +46,48 @@ def possible_solutions_for_square(puzzle, R, C):
     actual_values = [1,2,3,4,5,6,7,8,9]
     result = np.array(actual_values) *  np.array(possible_values)
     return result
+'''
 
 
+def is_valid_row(puzzle, R, num):
+    for i in range(9):
+        if puzzle[i][R] == num:
+            return False
+    return True
 
-def backtracing(puzzle):
-    result = possible_solutions_for_square(puzzle,0,2)
-    puzzle[0][2] = result
+
+def is_valid_col(puzzle, C, num):
+    for i in range(9):
+        if puzzle[C][i] == num:
+            return False
+    return True
+
+
+#save for later
+def is_valid_square(puzzle, C, R, num):
+    for i in range(3):
+        for j in range(3):
+            if puzzle[i][j] == num:
+                return False
+    return True
+
+
+def is_valid(puzzle, C, R, num):
+    return is_valid_col(puzzle, C, num) and is_valid_row(puzzle,R,num) and is_valid_square(puzzle,C,R,num)
+
+
+def backtracing(puzzle, R, C):
+    for i in range(9):
+        puzzle[R][C] = i
+        if is_valid(puzzle, C, R, num):
+            backtracing(puzzle, (R+1)%9, (C+1)%9)
+
 
 
 
 def main():
-    puzzle = create_puzzle()
+    #puzzle = create_puzzle()
+    puzzle = read_puzzle("testfile.txt")
     backtracing(puzzle)
     print_puzzle(puzzle)
 main()
