@@ -55,7 +55,7 @@ def Symmetry(toy):
 def GenerateLabel(toy):
     # Its a grayscale image so lets get rid of those pesky color channels
     density = Density(toy)
-    normal = toy > 0
+    normal = toy > 200
     symmetry = Symmetry(normal)
     verticalCrossings = FindVerticalCrossings(normal)
     horizontalCrossings = FindHorizontalCrossings(normal)
