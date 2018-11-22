@@ -3,7 +3,7 @@ source: https://www.analyticsvidhya.com/blog/2017/05/neural-network-from-scratch
 '''
 import InputAndLabels
 import numpy as np
-
+Verbose = True
 
 
 def sigmoid(x):
@@ -65,6 +65,8 @@ class NN(object):
         current_ratio = sum((output>0.5)==labels)/64
         if current_ratio > self.optimal_success_ratio[0]:
             self.optimal_success_ratio = (current_ratio, epoch)
+            if Verbose:
+                print("optimal success ratio of", self.optimal_success_ratio[0], "found at epoch:", self.optimal_success_ratio[1])
         return
 
 X, Y = InputAndLabels.getValuesAndLabels()
@@ -77,6 +79,11 @@ Y = np.array(Y)
 #Ytest = Y[50:]
 #Y = Y[:50]
 
-NeuralNet = NN(1000, 0.01, X.shape[1], 2, 1)
+
+learning_rate = 0.01
+NeuralNet = NN(1000, learning_rate, X.shape[1], 2, 1)
 success_ratio = NeuralNet.train(X,Y)
+final_prediction = (NeuralNet.predict(X)>0.5)==Y
+final_accuracy = sum(((NeuralNet.predict(X)>0.5)==Y))/64
+print("The network reached a success ratio of", final_accuracy,"with a learning rate of:", learning_rate)
 print("optimal success ratio of", success_ratio[0], "found at epoch:", success_ratio[1])
