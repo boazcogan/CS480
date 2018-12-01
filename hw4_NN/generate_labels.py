@@ -111,7 +111,7 @@ def load_example_image():
 
 
 def LoadAllImagesOfNumber(num):
-    files = sorted(glob.glob('mnist_data/'+str(num)+'/*'))
+    files = sorted(glob.glob(str(num)+'/*'))#'mnist_data/'+str(num)+'/*'))
     all_labels = []
     for elem in range(len(files)):
         inner_list = [str(files[elem])]
@@ -135,7 +135,7 @@ def LoadAllLabelsOfNumber(num):
     return all_labels
 
 def Part3LoadAllFeaturesOfNumber(num):
-    files = sorted(glob.glob('mnist_data/'+str(num)+'/*'))
+    files = sorted(glob.glob(str(num)+'/*'))#'mnist_data/'+str(num)+'/*'))
     all_labels = []
     for elem in range(len(files)):
         img = cv2.imread(str(files[elem]))
