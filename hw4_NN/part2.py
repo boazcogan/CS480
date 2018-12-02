@@ -108,17 +108,17 @@ class MultiLayerPerceptron(object):
 ALL_TRAIN, ALL_TEST, ALL_TRAIN_LABELS, ALL_TEST_LABELS = LoadData()
 
 p = DoTraining(ALL_TRAIN[:int(len(ALL_TRAIN))], ALL_TRAIN_LABELS[:int(len(ALL_TRAIN_LABELS))])
-print(p.weights)
-
-right = [0 for _ in range(10)]
-wrong = right[:]
+#print(p.weights)
 
 confusion_matrix = np.array([[0 for _ in range(10)] for _ in range(10)])
-
+correct = 0
 for i in range(int(len(ALL_TEST))):
 	activation = p.ActivationLabel(ALL_TEST[i])
+	if activation == ALL_TEST_LABELS[i]:
+		correct += 1
 	confusion_matrix[activation][ALL_TEST_LABELS[i]] += 1
 
+print(1-correct/len(ALL_TEST_LABELS)) # Total Error
 print(confusion_matrix)
 
 # perceptron = MultiLayerPerceptron(49,15,10)
