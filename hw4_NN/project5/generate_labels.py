@@ -118,7 +118,7 @@ def LoadAllImagesOfNumber(num):
         for i in range(len(data)):
             if labels[i] == num:
                 returnValue.append(GeneratePart3Features(data))
-        return returnValue
+        return list(returnValue)
     all_labels = []
     for elem in range(len(files)):
         inner_list = [str(files[elem])]
@@ -137,8 +137,8 @@ def LoadAllLabelsOfNumber(num):
         data, labels = load_mnist()
         for i in range(len(data)):
             if labels[i] == num:
-                returnValue.append(GenerateLabel(data))
-        return returnValue
+                returnValue.append(GenerateLabel(data[i]))
+        return list(returnValue)
     all_labels = []
     for elem in range(len(files)):
         img = cv2.imread(str(files[elem]))
@@ -156,7 +156,7 @@ def Part3LoadAllFeaturesOfNumber(num):
         for i in range(len(data)):
             if labels[i] == num:
                 returnValue.append(GeneratePart3Features(data[i]))
-        return returnValue
+        return list(returnValue)
     all_labels = []
     for elem in range(len(files)):
         img = cv2.imread(str(files[elem]))

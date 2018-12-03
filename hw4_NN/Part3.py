@@ -11,6 +11,7 @@ import numpy as np
 import generate_labels
 from random import shuffle
 import tqdm
+import pandas
 
 
 class mlp:
@@ -96,7 +97,7 @@ class mlp:
             updatew2 = eta * (np.dot(np.transpose(self.hidden), deltao)) + self.momentum * updatew2
             self.weights1 -= updatew1
             self.weights2 -= updatew2
-            self.mlpfwd(test_inputs, mode="test", ALL_TEST_LABELS=TEST_LABELS, current_epoch=i)
+            self.mlpfwd(test_inputs, mode="test", ALL_TEST_LABELS=TEST_LABELS, current_epoch=n)
 
             # Randomise order of inputs (not necessary for matrix-based calculation)
             # np.random.shuffle(change)
@@ -138,8 +139,8 @@ class mlp:
                 accuracy = sum(accuracy)/len(ALL_TEST_LABELS)
                 if accuracy>self.optimal:
                     self.optimal = accuracy
-                    self.optimalWeights1 = self.weights1
-                    self.optimalWeights2 = self.weights2
+                    self.optimalWeights1 = self.weights1[:]
+                    self.optimalWeights2 = self.weights2[:]
                     self.optimalEpoch = current_epoch
                 return outputs
             elif self.outtype == 'logistic':
@@ -148,8 +149,8 @@ class mlp:
                 accuracy = sum(accuracy)/len(ALL_TEST_LABELS)
                 if accuracy>self.optimal:
                     self.optimal = accuracy
-                    self.optimalWeights1 = self.weights1
-                    self.optimalWeights2 = self.weights2
+                    self.optimalWeights1 = self.weights1[:]
+                    self.optimalWeights2 = self.weights2[:]
                     self.optimalEpoch = current_epoch
                 return outputs
             elif self.outtype == 'softmax':
@@ -159,8 +160,8 @@ class mlp:
                 accuracy = sum(accuracy)/len(ALL_TEST_LABELS)
                 if accuracy>self.optimal:
                     self.optimal = accuracy
-                    self.optimalWeights1 = self.weights1
-                    self.optimalWeights2 = self.weights2
+                    self.optimalWeights1 = self.weights1[:]
+                    self.optimalWeights2 = self.weights2[:]
                     self.optimalEpoch = current_epoch
                 return outputs
             else:
@@ -191,9 +192,6 @@ class mlp:
             for j in range(nclasses):
                 cm[i, j] = np.sum(np.where(outputs == i, 1, 0) * np.where(targets == j, 1, 0))
 
-        print("Confusion matrix is:")
-        print(cm)
-        print("Percentage Correct: ", np.trace(cm) / np.sum(cm) * 100)
         return cm
 
     def setOptimal(self, optimalWeights1, optimalWeights2):
@@ -232,61 +230,85 @@ def scramble(Vals, Labels):
         tempLabels.append(Labels[elem])
     return tempVals, tempLabels
 
-ALL_TRAIN1, ALL_TEST1, ALL_TRAIN_LABELS, ALL_TEST_LABELS = LoadData()
-ALL_TRAIN, ALL_TEST, ALL_TRAIN_LABELS, ALL_TEST_LABELS = np.array(ALL_TRAIN1),np.array(ALL_TEST1),np.array(ALL_TRAIN_LABELS),np.array(ALL_TEST_LABELS)
+def write_optimal_weights(outfile, optimal_weights_1, optimal_weights_2, cm):
+    outfile.write("\nWeights of all the hidden-layer neurons as well as the output neurons of the optimal network:\n")
+    outfile.write("HiddenLayer: \n")
+    for row in optimal_weights_1:
+        outfile.write(str(row)+'\n')
+    outfile.write("\nOutputLayer: \n")
+    for row in optimal_weights_2:
+        outfile.write(str(row)+"\n")
+    outfile.write("confusion matrix: \n")
+    table = pandas.DataFrame(cm, ['0','1','2','3','4','5','6','7','8','9'],['0','1','2','3','4','5','6','7','8','9'])
+    table.to_string(outfile)
+
+def print_optimal_weights(optimal_weights_1, optimal_weights_2, cm):
+    print("\nWeights of all the hidden-layer neurons as well as the output neurons of the optimal network:\n")
+    print("HiddenLayer: \n")
+    for row in optimal_weights_1:
+        print(str(row)+'\n')
+    print("\nOutputLayer: \n")
+    for row in optimal_weights_2:
+        print(str(row)+"\n")
+    print("confusion matrix: \n")
+    table = pandas.DataFrame(cm, ['0','1','2','3','4','5','6','7','8','9'],['0','1','2','3','4','5','6','7','8','9'])
+    print(table)
 
 
-NEW_TRAIN_LABELS = []
-NEW_TEST_LABELS= []
-for i in range(len(ALL_TRAIN_LABELS)):
-    NEW_TRAIN_LABELS.append(np.zeros(10))
-    NEW_TRAIN_LABELS[i][ALL_TRAIN_LABELS[i]] = 1
 
-for i in range(len(ALL_TEST_LABELS)):
-    NEW_TEST_LABELS.append(np.zeros(10))
-    NEW_TEST_LABELS[i][ALL_TEST_LABELS[i]] = 1
+def main():
 
-ALL_TRAIN_LABELS = np.array(NEW_TRAIN_LABELS)
-ALL_TEST_LABELS = np.array(NEW_TEST_LABELS)
+    ALL_TRAIN1, ALL_TEST1, ALL_TRAIN_LABELS, ALL_TEST_LABELS = LoadData()
+    ALL_TRAIN, ALL_TEST, ALL_TRAIN_LABELS, ALL_TEST_LABELS = np.array(ALL_TRAIN1),np.array(ALL_TEST1),np.array(ALL_TRAIN_LABELS),np.array(ALL_TEST_LABELS)
 
 
-anddata = np.array([[0,0,0],[0,1,0],[1,0,0],[1,1,1]])
-xordata = np.array([[0,0,0],[0,1,1],[1,0,1],[1,1,0]])
+    NEW_TRAIN_LABELS = []
+    NEW_TEST_LABELS= []
+    for i in range(len(ALL_TRAIN_LABELS)):
+        NEW_TRAIN_LABELS.append(np.zeros(10))
+        NEW_TRAIN_LABELS[i][ALL_TRAIN_LABELS[i]] = 1
 
-labelFormatexpected = anddata[:,2:3]
-inputFormatExpected = anddata[:,0:2]
-#ALL_TRAIN_LABELS = ALL_TRAIN_LABELS.reshape(ALL_TRAIN_LABELS.shape[0],-1)
-#ALL_TEST_LABELS = ALL_TEST_LABELS.reshape(ALL_TEST_LABELS.shape[0],-1)
+    for i in range(len(ALL_TEST_LABELS)):
+        NEW_TEST_LABELS.append(np.zeros(10))
+        NEW_TEST_LABELS[i][ALL_TEST_LABELS[i]] = 1
+
+    ALL_TRAIN_LABELS = np.array(NEW_TRAIN_LABELS)
+    ALL_TEST_LABELS = np.array(NEW_TEST_LABELS)
 
 
-optimal_hidden = 0
-optimal_accuracy = 0
-for i in [10]:
+
+    optimal_hidden = 0
+    optimal_accuracy = 0
+    for i in [5,10,15]:
+        ALL_TRAIN, ALL_TEST = np.array(ALL_TRAIN1),np.array(ALL_TEST1)
+        perceptron = mlp(ALL_TRAIN,ALL_TRAIN_LABELS,i,1,1, "softmax")
+        TEST_SHAPE = np.shape(ALL_TEST)[0]
+        ALL_TEST = np.concatenate((ALL_TEST, -np.ones((TEST_SHAPE, 1))), axis=1)
+        perceptron.mlptrain(ALL_TRAIN,ALL_TRAIN_LABELS,0.1,1000, ALL_TEST, ALL_TEST_LABELS)
+        values1,values2,values3,values4 = perceptron.mlpGetOptimal()
+        print("The current tests accuracy is:", values1)
+        if values1>optimal_accuracy:
+            optimal_accuracy=values1
+            optimal_hidden=i
+            optimal_epoch = values2
+            optimal_weights_1 = values3
+            optimal_weights_2 = values4
+
     ALL_TRAIN, ALL_TEST = np.array(ALL_TRAIN1),np.array(ALL_TEST1)
-    perceptron = mlp(ALL_TRAIN,ALL_TRAIN_LABELS,i,1,1, "softmax")
-    TEST_SHAPE = np.shape(ALL_TEST)[0]
-    ALL_TEST = np.concatenate((ALL_TEST, -np.ones((TEST_SHAPE, 1))), axis=1)
-    perceptron.mlptrain(ALL_TRAIN,ALL_TRAIN_LABELS,0.1,1000, ALL_TEST, ALL_TEST_LABELS)
-    values1,values2,values3,values4 = perceptron.mlpGetOptimal()
-    if values1>optimal_accuracy:
-        optimal_accuracy=values1
-        optimal_hidden=i
-        optimal_epoch = values2
-        optimal_weights_1 = values3
-        optimal_weights_2 = values4
+    perceptron = mlp(ALL_TRAIN,ALL_TRAIN_LABELS,optimal_hidden,1,1, "softmax")
+    perceptron.setOptimal(optimal_weights_1,optimal_weights_2)
+    cm = perceptron.confmat(ALL_TEST, ALL_TEST_LABELS)
+    outfile = open("Part3Output.txt", "w")
+    outfile.write("Number of Neurons in HiddenLayer that gave minimum error: " + str(optimal_hidden))
+    outfile.write("\nEpoch at which the minimum error was reached: "+str(optimal_epoch))
+    outfile.write("\nThe error rate as a fraction between 0 and 1: "+str(1-optimal_accuracy))
+    write_optimal_weights(outfile, optimal_weights_1, optimal_weights_2, cm)
+    outfile.close()
+    print("Number of Neurons in HiddenLayer that gave minimum error: " + str(optimal_hidden))
+    print("\nEpoch at which the minimum error was reached: "+str(optimal_epoch))
+    print("\nThe error rate as a fraction between 0 and 1: "+str(1-optimal_accuracy))
+    print_optimal_weights(optimal_weights_1, optimal_weights_2, cm)
 
-ALL_TRAIN, ALL_TEST = np.array(ALL_TRAIN1),np.array(ALL_TEST1)
-#TEST_SHAPE = np.shape(ALL_TEST)[0]
-#ALL_TEST = np.concatenate((ALL_TEST, -np.ones((TEST_SHAPE, 1))), axis=1)
-perceptron = mlp(ALL_TRAIN,ALL_TRAIN_LABELS,optimal_hidden,1,1, "softmax")
-perceptron.setOptimal(optimal_weights_1,optimal_weights_2)
-cm = perceptron.confmat(ALL_TEST, ALL_TEST_LABELS)
-outfile = open("Part3Output.txt", "w")
-outfile.write("Number of Neurons in HiddenLayer that gave minimum error: " + str(optimal_hidden))
-outfile.write("\nEpoch at which the minimum error was reached: "+str(optimal_epoch))
-outfile.write("\nThe error rate as a fraction between 0 and 1: "+str(optimal_accuracy))
-outfile.write("\nWeights of all the hidden-layer neurons as well as the output neurons of the optimal network:\n")
-outfile.write("HiddenLayer: \n", +str(optimal_weights_1))
-outfile.write("\nOutputLayer: \n"+str(optimal_weights_2))
-outfile.write("\n\nConfusionMatrix: \n"+ str(cm))
-outfile.close()
+
+if __name__ == "__main__":
+    main()
