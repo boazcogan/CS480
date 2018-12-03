@@ -2,6 +2,7 @@ import numpy as np
 import generate_labels
 from random import shuffle
 import tqdm
+import _pickle as Pickle
 
 def loadData():
     print("Loading train and test data...")
@@ -62,7 +63,7 @@ class Perceptron(object):
     def train(self, data, labels, testData, testLabels):
         for i in tqdm.tqdm(range(self.epochs)):
             self.single_epoch(data,labels)
-            predictions = np.array(perceptron.predict(testData))
+            predictions = np.array(self.predict(testData))
             correct = predictions == testLabels
             accuracy = np.sum(correct)/len(testLabels)
             if accuracy > self.optimal_success_ratio:
@@ -83,14 +84,32 @@ class Perceptron(object):
         return predictions
 
 
-TRAIN_DATA, TRAIN_LABELS, TEST_DATA, TEST_LABELS = loadData()
-perceptron = Perceptron(0.1,6,1000)
-perceptron.train(TRAIN_DATA,TRAIN_LABELS, TEST_DATA, TEST_LABELS)
-# the following weights are known to work
-# perceptron.set_weights([-6.37737244, 4.04913265, 46.1064285, -96.24999999, -666.65857, 15.02999999], -1576.899999999)
-predictions = np.array(perceptron.predict(TEST_DATA))
-correct = predictions==TEST_LABELS
-accuracy = np.sum(correct)/len(TEST_LABELS)
-print(accuracy)
-print(perceptron.optimal_success_ratio)
-print(perceptron.optimal_weights)
+def main():
+    try:
+        # to load the given images
+        TRAIN_DATA, TEST_DATA, TRAIN_LABELS, TEST_LABELS = [],[],[],[]
+        for i in [7,9]:
+            file2 = open('data7.pkl', 'rb')
+            data = Pickle.load(file2, encoding='latin1')
+            dataNum = 4*len(data)//5
+            TRAIN_DATA += data[:dataNum]
+            TEST_DATA += data[dataNum:]
+            TRAIN_LABELS += [i for j in range(dataNum)]
+            TEST_LABELS += [i for j in range(len(data)-dataNum)]
+
+    except:
+        print("Error loading local data, defaulting to Tensorflow dataset")
+        TRAIN_DATA, TRAIN_LABELS, TEST_DATA, TEST_LABELS = loadData()
+    perceptron = Perceptron(0.1,6,1000)
+    perceptron.train(TRAIN_DATA,TRAIN_LABELS, TEST_DATA, TEST_LABELS)
+    # the following weights are known to work
+    # perceptron.set_weights([-6.37737244, 4.04913265, 46.1064285, -96.24999999, -666.65857, 15.02999999], -1576.899999999)
+    predictions = np.array(perceptron.predict(TEST_DATA))
+    correct = predictions==TEST_LABELS
+    accuracy = np.sum(correct)/len(TEST_LABELS)
+    print(accuracy)
+    print(perceptron.optimal_success_ratio)
+    print(perceptron.optimal_weights)
+
+if __name__ == '__main__':
+    main()

@@ -12,6 +12,7 @@ import generate_labels
 from random import shuffle
 import tqdm
 import pandas
+import _pickle as Pickle
 
 
 class mlp:
@@ -260,7 +261,21 @@ def print_optimal_weights(optimal_weights_1, optimal_weights_2, cm):
 
 def main():
 
-    ALL_TRAIN1, ALL_TEST1, ALL_TRAIN_LABELS, ALL_TEST_LABELS = LoadData()
+    try:
+        # to load the given images
+        ALL_TRAIN1, ALL_TEST1, ALL_TRAIN_LABELS, ALL_TEST_LABELS = [],[],[],[]
+        for i in range(10):
+            file2 = open('data7.pkl', 'rb')
+            data = Pickle.load(file2, encoding='latin1')
+            dataNum = 4*len(data)//5
+            ALL_TRAIN1 += data[:dataNum]
+            ALL_TEST1 += data[dataNum:]
+            ALL_TRAIN_LABELS += [i for j in range(dataNum)]
+            ALL_TEST_LABELS += [i for j in range(len(data)-dataNum)]
+
+    except:
+        print("Error loading local data, defaulting to Tensorflow dataset")
+        ALL_TRAIN1, ALL_TEST1, ALL_TRAIN_LABELS, ALL_TEST_LABELS = LoadData()
     ALL_TRAIN, ALL_TEST, ALL_TRAIN_LABELS, ALL_TEST_LABELS = np.array(ALL_TRAIN1),np.array(ALL_TEST1),np.array(ALL_TRAIN_LABELS),np.array(ALL_TEST_LABELS)
 
 
